@@ -1,0 +1,132 @@
+#include <fstream>
+#include <iostream>
+#include <stdio.h>
+
+using namespace std;
+
+char text[200], numbers[200],temp[40][15];
+int q[100];
+
+void sort(int length) {
+	int i = length;
+	__asm {
+		lea edi, q; edi = указатель на массив
+		mov ecx, i; ecx = количество элементов
+		a0 : lea ebx, [edi + ecx * 4]; ebx = максимальный индекс в проходе + 1
+		mov eax, [edi]; eax = min = величина первого элемента в проходе
+		a1 : sub ebx, 4; двигаемся по проходу вверх
+		cmp eax, [ebx]
+		jbe a2; min > array[ebx] ?
+		xchg eax, [ebx]; swap(array[ebx], min)
+		a2:     cmp ebx, edi
+		jnz a1; проход закончился ?
+		stosd; mov[edi], eax edi = +4 на первой позиции минимальный элемент
+		loop a0
+	}
+
+}
+
+
+int count__numbers(int count) {
+	int i = 0, i1;
+	_asm {
+		lea edi, text
+		lea esi, numbers
+		mov ecx, count
+
+		mov ebx,0
+		mov edx,0
+
+		k:
+		mov al, [edi]
+		inc edi
+		cmp al, '0'
+		jge k2
+		jmp k5
+		
+		k2:
+		cmp al, '9'
+		jle k3
+		jmp k5
+		
+		k3:
+		mov [esi+ebx],al
+		inc ebx
+		jmp loop1
+
+		
+		k5:
+		cmp [esi+ebx-1], ' '
+		jz loop1
+		mov [esi+ebx], ' '
+		inc ebx
+		inc edx
+		jmp loop1
+
+		loop1:
+			loop k
+
+		
+		e:	
+		mov i, edx
+		mov i1,ebx
+	}
+	int k=0,l=0;
+	for (int i = 0; i < i1; i++)
+	{
+		if (numbers[i] == ' ')
+		{
+			cout << k+1 <<" элемент: " << temp[k] << endl;
+			k++;
+			l = 0;
+			continue;
+		}
+		temp[k][l] = numbers[i];
+		l++;
+	}
+	cout << k + 1 << " элемент: " << temp[k] << endl;
+	for (int i = 0; i <= k; i++)
+	{
+		q[i] = atoi(temp[i]);
+	}
+	sort(k+1);
+	ofstream file__vivod("вывод.txt");
+	printf("Данные сохранены в файле вывод.txt");
+	for (int i = 0; i < k; i++)
+	{
+		file__vivod << q[i] << endl;
+	}
+	file__vivod.close();
+	return i1;
+	
+}
+
+
+int main()
+{
+	int i = 0;
+	setlocale(LC_ALL, "Russian");
+	fstream file("ввод.txt");
+	bool isFileNotOpen = file.is_open() ? false : true;
+	if (isFileNotOpen) {
+		printf("Не удается найти файл vvod.txt. Возможно, его не существует\n");
+		file.close();
+		return 0;
+	}
+	char symbol;
+	while (file) {
+		file.get(symbol); 
+		text[i] = symbol; 
+		i++;
+	}
+	file.close();
+	if (i == 1)
+	{
+		printf("В файле нет символов");
+		return 0;
+	}
+	cout << "Данные из файла:" << endl;
+	int q=count__numbers(i-1);
+	system("pause");
+	return 0;
+}
