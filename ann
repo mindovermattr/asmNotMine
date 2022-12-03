@@ -1,12 +1,15 @@
+#include <stdio.h>
 #include <fstream>
 #include <iostream>
-#include <stdio.h>
+
 
 using namespace std;
 
-char text[200], numbers[200],temp[40][15];
+char text[200], numbers[200], temp[40][15];
 int q[100];
 
+
+//Сортировка прямым способом
 void sort(int length) {
 	int i = length;
 	__asm {
@@ -26,57 +29,111 @@ void sort(int length) {
 
 }
 
+//Конвертация чисел в формате строки в формат числовой(int)
+void convert_char_to_int(int count) {
+	int l;
+	int res = 0;
+	char t[15];
+	for (int i = 0; i < count; i++)
+	{
+		res = 0;
+		l = 0;
+		
+		do {		//Записываем в временную переменную символы, а также считаем количество цифр в числе
+			t[l] = temp[i][l];
+			l++;
+			
+		} while (temp[i][l] != '\0');
 
-int count__numbers(int count) {
+		_asm {
+			lea esi, t
+			mov ecx, l
+			dec ecx
+			mov eax, 1
+			lp:
+			xor edx, edx		
+				mov dl, [esi + ecx]
+				push eax
+				sub dl, 30h
+				mul edx
+				add res, eax
+				pop eax
+				mov edx, 10
+				mul edx
+				dec ecx
+				cmp ecx, -1
+				jnz lp
+		}
+		q[i] = res; //Записываем в переменную типа int значения
+	}
+
+}
+
+int WRITING_FROM_A_FILE(int count) {
 	int i = 0, i1;
 	_asm {
 		lea edi, text
-		lea esi, numbers
+		lea esi, numbers;загрузка адресов
 		mov ecx, count
 
-		mov ebx,0
-		mov edx,0
+		mov ebx, 0
+		mov edx, 0
 
 		k:
-		mov al, [edi]
-		inc edi
-		cmp al, '0'
-		jge k2
-		jmp k5
-		
-		k2:
-		cmp al, '9'
-		jle k3
-		jmp k5
-		
-		k3:
-		mov [esi+ebx],al
-		inc ebx
-		jmp loop1
+		mov al, [edi]; берем элемент из массива text
+			inc edi
+			cmp al, '0'; сравниваем с 0
+			jge k2; Если больше или равен, то переходим на k2, в ином случае - k5
+			jmp k5
 
-		
-		k5:
-		cmp [esi+ebx-1], ' '
-		jz loop1
-		mov [esi+ebx], ' '
-		inc ebx
-		inc edx
-		jmp loop1
+			k2 :
+		cmp al, '9'; сравниваем с 9
+			jle k3; Если больше или равен, то переходим на k3, в ином случае - k5
+			jmp k5
 
-		loop1:
-			loop k
+			k3 : ; В данной метке происходит запись элемента в массив numbers
+			mov[esi + ebx], al
+			inc ebx
+			jmp loop1
 
-		
-		e:	
+
+			k5 : ;В данной метке происходит добавление пробела между двумя цифрами
+			cmp[esi + ebx - 1], ' '; Если пробел уже был добавлен, то прыгаем на следующую иттерацию
+			jz loop1
+			cmp ebx, 0
+			jz loop1
+			mov[esi + ebx], ' '
+			inc ebx
+			inc edx
+			jmp loop1
+
+			loop1 :
+		loop k
+
+			cmp[esi + ebx - 1], ' ';проверяем последний элемент на пробел
+			jnz e; если нет, то ничего не делаем, иначе заменяем элемент на '\0'
+			mov al, '\0'
+			mov [esi+ebx-1], al
+
+			e :
 		mov i, edx
-		mov i1,ebx
+			mov i1, ebx;В регистре ebx хранится информация о количестве символов в массиве numbers
 	}
-	int k=0,l=0;
+
+	int k = 0, l = 0;
+	//Проверка на отсутствие цифр
+	if (numbers[0] == '\0') {
+		cout << "В файле отсутствуют цифры" << endl;
+		return 0;
+	}
+	cout << "Данные из файла:" << endl;
+
+	//Вывод элементов в консоль, и размещение их в двумерный массив
 	for (int i = 0; i < i1; i++)
 	{
 		if (numbers[i] == ' ')
 		{
-			cout << k+1 <<" элемент: " << temp[k] << endl;
+			cout << k + 1 << " элемент: " << temp[k] << endl;
 			k++;
 			l = 0;
 			continue;
@@ -85,48 +142,61 @@ int count__numbers(int count) {
 		l++;
 	}
 	cout << k + 1 << " элемент: " << temp[k] << endl;
-	for (int i = 0; i <= k; i++)
-	{
-		q[i] = atoi(temp[i]);
-	}
+
+	convert_char_to_int(k+1);
+
 	sort(k+1);
+
 	ofstream file__vivod("вывод.txt");
+
 	printf("Данные сохранены в файле вывод.txt");
-	for (int i = 0; i < k; i++)
+
+	for (int i = 0; i < k+1; i++)
 	{
 		file__vivod << q[i] << endl;
 	}
+
 	file__vivod.close();
+
 	return i1;
-	
+
 }
 
 
 int main()
 {
 	int i = 0;
+
 	setlocale(LC_ALL, "Russian");
 	fstream file("ввод.txt");
+
 	bool isFileNotOpen = file.is_open() ? false : true;
+
+	//Проверка на успешное открытие файла
 	if (isFileNotOpen) {
-		printf("Не удается найти файл vvod.txt. Возможно, его не существует\n");
+		printf("Не удается найти файл ввод.txt. Возможно, его не существует\n");
 		file.close();
 		return 0;
 	}
+
 	char symbol;
+	//Запись из текстового файла символов
 	while (file) {
-		file.get(symbol); 
-		text[i] = symbol; 
+		file.get(symbol);
+		text[i] = symbol;
 		i++;
 	}
+
 	file.close();
+
 	if (i == 1)
 	{
-		printf("В файле нет символов");
+		printf("В файле нет символов\n");
+		system("pause");
 		return 0;
 	}
-	cout << "Данные из файла:" << endl;
-	int q=count__numbers(i-1);
+
+	int q = WRITING_FROM_A_FILE(i - 1);
 	system("pause");
 	return 0;
 }
