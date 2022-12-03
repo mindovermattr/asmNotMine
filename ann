@@ -149,7 +149,7 @@ int WRITING_FROM_A_FILE(int count) {
 
 	ofstream file__vivod("вывод.txt");
 
-	printf("Данные сохранены в файле вывод.txt");
+	printf("Отсортированные данные сохранены в файле вывод.txt\n");
 
 	for (int i = 0; i < k+1; i++)
 	{
