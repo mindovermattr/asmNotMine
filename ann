@@ -1,3 +1,5 @@
+
+
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
@@ -32,18 +34,33 @@ void sort(int length) {
 //Конвертация чисел в формате строки в формат числовой(int)
 void convert_char_to_int(int count) {
 	int l;
-	int res = 0;
-	char t[15];
+	int res = 0, flag=0,k=0;
+	char t[15],f[15];
 	for (int i = 0; i < count; i++)
 	{
 		res = 0;
 		l = 0;
-		
+		flag = 0;
 		do {		//Записываем в временную переменную символы, а также считаем количество цифр в числе
 			t[l] = temp[i][l];
 			l++;
-			
+
 		} while (temp[i][l] != '\0');
+
+
+		if (t[0] == '-') flag = 1; //	Если число отрицательное - возводим флаг
+		if (flag ==1)
+		{
+			for (int i = 1; i < l; i++)
+			{
+				f[i-1] = t[i];				//Записываем число в временный char массив для сдвига на 1 символ вправо (чтобы убрать минус)
+			}
+			for (int i = 0; i < l; i++)
+			{
+				t[i] = f[i];	//Записываем число уже без минуса
+			}
+			l--; //Так как минус за число не считается, уменьшаем общее число элементов
+		}
 
 		_asm {
 			lea esi, t
@@ -51,7 +68,7 @@ void convert_char_to_int(int count) {
 			dec ecx
 			mov eax, 1
 			lp:
-			xor edx, edx		
+			xor edx, edx
 				mov dl, [esi + ecx]
 				push eax
 				sub dl, 30h
@@ -64,7 +81,7 @@ void convert_char_to_int(int count) {
 				cmp ecx, -1
 				jnz lp
 		}
-		q[i] = res; //Записываем в переменную типа int значения
+		q[i] = flag==1? res*-1:res; //Записываем в массив типа int значение. Если флаг возведен, то число отрицательное, иначе- положительное
 	}
 
 }
@@ -73,7 +90,7 @@ int WRITING_FROM_A_FILE(int count) {
 	int i = 0, i1;
 	_asm {
 		lea edi, text
-		lea esi, numbers;загрузка адресов
+		lea esi, numbers; загрузка адресов
 		mov ecx, count
 
 		mov ebx, 0
@@ -92,12 +109,20 @@ int WRITING_FROM_A_FILE(int count) {
 			jmp k5
 
 			k3 : ; В данной метке происходит запись элемента в массив numbers
+			push eax
+			mov al, [edi - 2]
+			cmp al , '-'
+			jnz k4
+			mov [esi+ebx],al
+			inc ebx
+			k4:
+			pop eax
 			mov[esi + ebx], al
 			inc ebx
 			jmp loop1
 
 
-			k5 : ;В данной метке происходит добавление пробела между двумя цифрами
+			k5 : ; В данной метке происходит добавление пробела между двумя цифрами
 			cmp[esi + ebx - 1], ' '; Если пробел уже был добавлен, то прыгаем на следующую иттерацию
 			jz loop1
 			cmp ebx, 0
@@ -110,14 +135,14 @@ int WRITING_FROM_A_FILE(int count) {
 			loop1 :
 		loop k
 
-			cmp[esi + ebx - 1], ' ';проверяем последний элемент на пробел
+			cmp[esi + ebx - 1], ' '; проверяем последний элемент на пробел
 			jnz e; если нет, то ничего не делаем, иначе заменяем элемент на '\0'
 			mov al, '\0'
-			mov [esi+ebx-1], al
+			mov[esi + ebx - 1], al
 
 			e :
 		mov i, edx
-			mov i1, ebx;В регистре ebx хранится информация о количестве символов в массиве numbers
+			mov i1, ebx; В регистре ebx хранится информация о количестве символов в массиве numbers
 	}
 
 	int k = 0, l = 0;
@@ -143,19 +168,37 @@ int WRITING_FROM_A_FILE(int count) {
 	}
 	cout << k + 1 << " элемент: " << temp[k] << endl;
 
-	convert_char_to_int(k+1);
+	convert_char_to_int(k + 1);
 
-	sort(k+1);
+	sort(k + 1);
 
 	ofstream file__vivod("вывод.txt");
 
-	printf("Отсортированные данные сохранены в файле вывод.txt\n");
+	int tem[100];
+	int c=1;
+	cout << "Отсортированные:" << endl;
+		i = 0;
+		do
+		{
+			tem[i] = q[i];
+			i++;
+		} while (q[i]>0);
+		int asd=i;
+		for (i; i < k+1 ; i++)
+		{
+			cout <<c<<" элемент: " << q[i] << endl;
+			file__vivod << q[i] << endl;
+			c++;
+		}
+		for (int l = 0; l < asd; l++)
+		{
+			cout << c << " элемент: " << tem[l] << endl;
+			file__vivod << tem[l] << endl;
+			c++;
+		}
+	
 
-	for (int i = 0; i < k+1; i++)
-	{
-		file__vivod << q[i] << endl;
-	}
-
+		printf("Отсортированные данные сохранены в файле вывод.txt\n");
 	file__vivod.close();
 
 	return i1;
