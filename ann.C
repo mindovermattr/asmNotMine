@@ -10,7 +10,7 @@ using namespace std;
 char text[200], numbers[200], temp[40][15];
 int q[100];
 
-
+//jg jl
 //Сортировка прямым способом
 void sort(int length) {
 	int i = length;
@@ -21,7 +21,7 @@ void sort(int length) {
 		mov eax, [edi]; eax = min = величина первого элемента в проходе
 		a1 : sub ebx, 4; двигаемся по проходу вверх
 		cmp eax, [ebx]
-		jbe a2; min > array[ebx] ?
+		jl a2; min > array[ebx] ?
 		xchg eax, [ebx]; swap(array[ebx], min)
 		a2:     cmp ebx, edi
 		jnz a1; проход закончился ?
@@ -34,8 +34,8 @@ void sort(int length) {
 //Конвертация чисел в формате строки в формат числовой(int)
 void convert_char_to_int(int count) {
 	int l;
-	int res = 0, flag=0,k=0;
-	char t[15],f[15];
+	int res = 0, flag = 0, k = 0;
+	char t[15], f[15];
 	for (int i = 0; i < count; i++)
 	{
 		res = 0;
@@ -49,11 +49,11 @@ void convert_char_to_int(int count) {
 
 
 		if (t[0] == '-') flag = 1; //	Если число отрицательное - возводим флаг
-		if (flag ==1)
+		if (flag == 1)
 		{
 			for (int i = 1; i < l; i++)
 			{
-				f[i-1] = t[i];				//Записываем число в временный char массив для сдвига на 1 символ вправо (чтобы убрать минус)
+				f[i - 1] = t[i];				//Записываем число в временный char массив для сдвига на 1 символ вправо (чтобы убрать минус)
 			}
 			for (int i = 0; i < l; i++)
 			{
@@ -81,7 +81,7 @@ void convert_char_to_int(int count) {
 				cmp ecx, -1
 				jnz lp
 		}
-		q[i] = flag==1? res*-1:res; //Записываем в массив типа int значение. Если флаг возведен, то число отрицательное, иначе- положительное
+		q[i] = flag == 1 ? res * -1 : res; //Записываем в массив типа int значение. Если флаг возведен, то число отрицательное, иначе- положительное
 	}
 
 }
@@ -111,12 +111,12 @@ int WRITING_FROM_A_FILE(int count) {
 			k3 : ; В данной метке происходит запись элемента в массив numbers
 			push eax
 			mov al, [edi - 2]
-			cmp al , '-'
+			cmp al, '-'
 			jnz k4
-			mov [esi+ebx],al
+			mov[esi + ebx], al
 			inc ebx
-			k4:
-			pop eax
+			k4 :
+		pop eax
 			mov[esi + ebx], al
 			inc ebx
 			jmp loop1
@@ -175,30 +175,35 @@ int WRITING_FROM_A_FILE(int count) {
 	ofstream file__vivod("вывод.txt");
 
 	int tem[100];
-	int c=1;
+	int c = 1;
 	cout << "Отсортированные:" << endl;
-		i = 0;
-		do
-		{
-			tem[i] = q[i];
-			i++;
-		} while (q[i]>0);
-		int asd=i;
-		for (i; i < k+1 ; i++)
-		{
-			cout <<c<<" элемент: " << q[i] << endl;
-			file__vivod << q[i] << endl;
-			c++;
-		}
-		for (int l = 0; l < asd; l++)
-		{
-			cout << c << " элемент: " << tem[l] << endl;
-			file__vivod << tem[l] << endl;
-			c++;
-		}
-	
+	i = 0;
+	for (int i = 0; i < k+1; i++)
+	{
+		cout << i+1 << " элемент: " << q[i] << endl;
+		file__vivod << q[i] << endl;
+	}
+	/*do
+	{
+		tem[i] = q[i];
+		i++;
+	} while (q[i] < 0);
+	int asd = i;
+	for (i; i < k + 1; i++)
+	{
+		cout << c << " элемент: " << q[i] << endl;
+		file__vivod << q[i] << endl;
+		c++;
+	}
+	for (int l = 0; l < asd; l++)
+	{
+		cout << c << " элемент: " << tem[l] << endl;
+		file__vivod << tem[l] << endl;
+		c++;
+	}*/
 
-		printf("Отсортированные данные сохранены в файле вывод.txt\n");
+
+	printf("Отсортированные данные сохранены в файле вывод.txt\n");
 	file__vivod.close();
 
 	return i1;
